@@ -758,7 +758,10 @@ loadFromStorage().then(() => {
 canvas.addEventListener('mousedown', (e) => { canvas.focus(); startDraw(e); });
 canvas.addEventListener('mousemove', (e) => {
   onMove(e);
-  if (typeof Room !== 'undefined') Room.sendCursor(e.clientX, e.clientY);
+  if (typeof Room !== 'undefined') {
+    const wp = Viewport.screenToWorld(e.clientX, e.clientY);
+    Room.sendCursor(wp.x, wp.y);
+  }
 });
 canvas.addEventListener('mouseup',   stopDraw);
 canvas.addEventListener('mouseleave', () => {

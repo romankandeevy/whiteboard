@@ -44,8 +44,9 @@ const Room = (() => {
     });
 
     socket.on('cursor', ({ id, x, y }) => {
-      const users = roomUsers.get(id);
-      renderRemoteCursor(id, x, y, users?.name, users?.color);
+      const u = roomUsers.get(id);
+      const sp = (typeof Viewport !== 'undefined') ? Viewport.worldToScreen(x, y) : { x, y };
+      renderRemoteCursor(id, sp.x, sp.y, u?.name, u?.color);
     });
 
     socket.on('cursor-leave', ({ id }) => {
