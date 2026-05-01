@@ -1,25 +1,26 @@
-// ── WB Logo Menu ─────────────────────────────────────────────────────────────
+// ── WB Header Menu ───────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  const logo = document.getElementById('wb-logo');
-  const menu = document.getElementById('wb-menu');
+  const moreBtn = document.getElementById('wb-header-more');
+  const menu    = document.getElementById('wb-menu');
 
-  logo.addEventListener('click', (e) => {
+  function closeMenu() {
+    menu.classList.remove('open');
+    moreBtn?.classList.remove('open');
+  }
+
+  moreBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     const isOpen = menu.classList.toggle('open');
-    logo.classList.toggle('open', isOpen);
+    moreBtn.classList.toggle('open', isOpen);
   });
 
   document.addEventListener('click', (e) => {
-    if (!menu.contains(e.target) && e.target !== logo) {
-      menu.classList.remove('open');
-      logo.classList.remove('open');
-    }
+    if (!menu.contains(e.target) && e.target !== moreBtn) closeMenu();
   });
 
   document.getElementById('menu-new').addEventListener('click', () => {
-    menu.classList.remove('open');
-    logo.classList.remove('open');
+    closeMenu();
     if (typeof strokes !== 'undefined' && strokes.length > 0) {
       if (!confirm('Очистить доску и начать новую?')) return;
     }
@@ -27,26 +28,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('menu-save').addEventListener('click', () => {
-    menu.classList.remove('open');
-    logo.classList.remove('open');
-    const btn = document.getElementById('btn-export-png');
-    if (btn) btn.click();
+    closeMenu();
+    document.getElementById('btn-export-png')?.click();
+  });
+
+  document.getElementById('menu-clear').addEventListener('click', () => {
+    closeMenu();
+    document.getElementById('btn-clear')?.click();
   });
 
   document.getElementById('wb-header-export')?.addEventListener('click', () => {
     document.getElementById('btn-export-png')?.click();
   });
 
-  document.getElementById('wb-header-more')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isOpen = menu.classList.toggle('open');
-    logo.classList.toggle('open', isOpen);
-  });
-
-  document.getElementById('menu-clear').addEventListener('click', () => {
-    menu.classList.remove('open');
-    logo.classList.remove('open');
-    const btn = document.getElementById('btn-clear');
-    if (btn) btn.click();
+  // Название доски — inline редактирование по клику
+  const titleInput = document.getElementById('wb-board-title');
+  titleInput?.addEventListener('click', () => titleInput.select());
+  titleInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === 'Escape') titleInput.blur();
   });
 });
