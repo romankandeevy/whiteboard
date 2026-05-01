@@ -289,27 +289,61 @@ function buildShapeStroke(x1, y1, x2, y2) {
   return { type: tool, x: x1, y: y1, w, h, ...base };
 }
 
-// ── Storage (debounced) ──────────────────────────────────────────────────────
+// ── Storage ──────────────────────────────────────────────────────────────────
+
+let currentBoardId = null;
+
+function getCurrentBoardId() {
+  if (currentBoardId) return currentBoardId;
+  const p = new URLSearchParams(window.location.search);
+  return p.get('board');
+}
 
 let saveTimer = null;
 function saveToStorage() {
   flashSavedIndicator();
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
+  saveTimer = setTimeout(async () => {
+    const bid = getCurrentBoardId();
+    const title = document.getElementById('wb-board-title')?.value || 'Untitled';
+    if (bid && typeof API !== 'undefined' && API.getToken()) {
+      try {
+        await API.saveBoard(bid, { data: strokes, title });
+        return;
+      } catch {}
+    }
     try {
       localStorage.setItem('whiteboard', JSON.stringify(strokes));
-    } catch (e) {
-      showToast && showToast('Не удалось сохранить (хранилище переполнено)');
-    }
-  }, 400);
+    } catch {}
+  }, 800);
 }
 
 function saveImmediate() {
   clearTimeout(saveTimer);
+  const bid = getCurrentBoardId();
+  const title = document.getElementById('wb-board-title')?.value || 'Untitled';
+  if (bid && typeof API !== 'undefined' && API.getToken()) {
+    API.saveBoard(bid, { data: strokes, title }).catch(() => {});
+    return;
+  }
   try { localStorage.setItem('whiteboard', JSON.stringify(strokes)); } catch {}
 }
 
-function loadFromStorage() {
+async function loadFromStorage() {
+  const bid = getCurrentBoardId();
+  if (bid && typeof API !== 'undefined' && API.getToken()) {
+    try {
+      const board = await API.getBoard(bid);
+      strokes = board.data || [];
+      currentBoardId = bid;
+      const titleEl = document.getElementById('wb-board-title');
+      if (titleEl) {
+        titleEl.value = board.title || 'Untitled';
+        titleEl.dispatchEvent(new Event('input'));
+      }
+      return;
+    } catch {}
+  }
   const saved = localStorage.getItem('whiteboard');
   if (saved) {
     try { strokes = JSON.parse(saved) || []; } catch { strokes = []; }
@@ -675,11 +709,12 @@ function closeAllToolPopups() {
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 applyCanvasSize();
-loadFromStorage();
-updateEmptyHint();
-updateStatus();
 setCursorForTool();
-scheduleRender();
+loadFromStorage().then(() => {
+  updateEmptyHint();
+  updateStatus();
+  scheduleRender();
+});
 
 // Mouse
 canvas.addEventListener('mousedown', (e) => { canvas.focus(); startDraw(e); });

@@ -139,18 +139,45 @@
     </div>
   </header>
   <div id="wb-menu" class="wb-menu">
-    <button type="button" class="wb-menu-item" id="menu-new">
+    <!-- Блок пользователя (если авторизован) -->
+    <div class="wb-menu-user" id="wb-menu-user" style="display:none">
+      <div class="wb-menu-avatar" id="wb-menu-avatar"></div>
+      <div>
+        <div class="wb-menu-username" id="wb-menu-username"></div>
+        <div class="wb-menu-email" id="wb-menu-email"></div>
+      </div>
+    </div>
+    <div class="wb-menu-divider" id="wb-menu-user-divider" style="display:none"></div>
+
+    <!-- Авторизован -->
+    <button type="button" class="wb-menu-item wb-auth-only" id="menu-my-boards" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Мои доски
+    </button>
+    <button type="button" class="wb-menu-item wb-auth-only" id="menu-new-board" style="display:none">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Новая доска
     </button>
+
+    <!-- Не авторизован -->
+    <button type="button" class="wb-menu-item wb-guest-only" id="menu-login" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Войти / Регистрация
+    </button>
+
+    <div class="wb-menu-divider"></div>
     <button type="button" class="wb-menu-item" id="menu-save">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Сохранить PNG
     </button>
-    <div class="wb-menu-divider"></div>
     <button type="button" class="wb-menu-item wb-menu-danger" id="menu-clear">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
       Очистить доску
+    </button>
+    <div class="wb-menu-divider wb-auth-only" id="wb-menu-logout-divider" style="display:none"></div>
+    <button type="button" class="wb-menu-item wb-menu-danger wb-auth-only" id="menu-logout" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Выйти
     </button>
   </div>
 
@@ -290,6 +317,7 @@
     </div>
   </div>
 
+  <script src="js/api.js"></script>
   <script src="js/menu.js"></script>
   <script src="js/users.js"></script>
   <script src="js/shapes.js"></script>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WHITE — Мои доски</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <header class="dash-header">
+    <a href="/dashboard.html" class="dash-logo">WHITE</a>
+    <div class="dash-header-right">
+      <div class="dash-user" id="dash-user">
+        <div class="dash-avatar" id="dash-avatar">?</div>
+        <span id="dash-username"></span>
+      </div>
+      <button class="dash-logout" id="dash-logout">Выйти</button>
+    </div>
+  </header>
+
+  <main class="dash-main">
+    <div class="dash-top">
+      <h1 class="dash-title">Мои доски</h1>
+      <button class="dash-new-btn" id="btn-new-board">+ Новая доска</button>
+    </div>
+
+    <div class="dash-boards" id="dash-boards">
+      <div class="dash-loading">Загрузка…</div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script>
+    (async () => {
+      const token = API.getToken();
+      if (!token) return window.location.href = '/auth.html';
+
+      let user;
+      try {
+        const me = await API.me();
+        user = me.user;
+      } catch {
+        API.clearToken();
+        return window.location.href = '/auth.html';
+      }
+
+      // Показываем пользователя
+      document.getElementById('dash-username').textContent = user.name;
+      const av = document.getElementById('dash-avatar');
+      av.textContent = user.name.slice(0, 2).toUpperCase();
+      av.style.background = hashColor(user.name);
+
+      document.getElementById('dash-logout').addEventListener('click', () => {
+        API.clearToken();
+        window.location.href = '/auth.html';
+      });
+
+      // Создать новую доску
+      document.getElementById('btn-new-board').addEventListener('click', async () => {
+        const board = await API.createBoard('Untitled');
+        window.location.href = `/?board=${board.id}`;
+      });
+
+      // Загружаем доски
+      await loadBoards();
+
+      async function loadBoards() {
+        const container = document.getElementById('dash-boards');
+        const boards = await API.getBoards();
+
+        if (!boards.length) {
+          container.innerHTML = `
+            <div class="dash-empty">
+              <p>У вас ещё нет досок</p>
+              <button class="dash-new-btn" onclick="document.getElementById('btn-new-board').click()">Создать первую доску</button>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = '';
+        boards.forEach(board => {
+          const card = document.createElement('div');
+          card.className = 'dash-board-card';
+          card.innerHTML = `
+            <div class="dash-board-preview"></div>
+            <div class="dash-board-info">
+              <div class="dash-board-title">${escHtml(board.title)}</div>
+              <div class="dash-board-date">${formatDate(board.updated_at)}</div>
+            </div>
+            <div class="dash-board-actions">
+              <button class="dash-board-delete" data-id="${board.id}" title="Удалить">×</button>
+            </div>
+          `;
+          card.addEventListener('click', (e) => {
+            if (e.target.classList.contains('dash-board-delete')) return;
+            window.location.href = `/?board=${board.id}`;
+          });
+          card.querySelector('.dash-board-delete').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (!confirm('Удалить доску?')) return;
+            await API.deleteBoard(board.id);
+            card.remove();
+            if (!container.children.length) loadBoards();
+          });
+          container.appendChild(card);
+        });
+      }
+
+      function formatDate(dt) {
+        const d = new Date(dt);
+        return d.toLocaleDateString('ru', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      function escHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      function hashColor(name) {
+        const colors = ['#e53935','#d81b60','#8e24aa','#3949ab','#1e88e5','#00897b','#43a047','#fb8c00'];
+        let h = 0;
+        for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+        return colors[h % colors.length];
+      }
+    })();
+  </script>
+</body>
+</html>

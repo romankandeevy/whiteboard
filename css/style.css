@@ -250,6 +250,37 @@ canvas {
   margin: 4px 0;
 }
 
+.wb-menu-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+}
+
+.wb-menu-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.wb-menu-username {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.wb-menu-email {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 /* ── Тулбар ─────────────────────────────────────────────────────────────── */
 
 .toolbar, .right-toolbar {
