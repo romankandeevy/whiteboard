@@ -153,9 +153,6 @@ function getCachedImage(src) {
   return img;
 }
 
-function invalidateImageCache(src) {
-  _imageCache.delete(src);
-}
 
 function drawImageStroke(context, stroke) {
   const img = getCachedImage(stroke.src);

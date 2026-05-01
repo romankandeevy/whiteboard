@@ -197,10 +197,10 @@ function showFloatingToolbar(stroke, idx) {
   tb.id = 'floating-toolbar';
   tb.className = 'floating-toolbar';
 
-  const copyIcon   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
-  const delIcon    = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>`;
-  const upIcon     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>`;
-  const downIcon   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>`;
+  const copyIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+  const delIcon  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>`;
+  const upIcon   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>`;
+  const downIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>`;
 
   const zOrderBlock = `
     <button type="button" class="ft-btn ft-z-up"   title="На передний план">${upIcon}</button>
@@ -214,14 +214,6 @@ function showFloatingToolbar(stroke, idx) {
     <div class="ft-colors ft-colors-hidden" id="ft-colors"></div>
   `;
 
-  const removeBgBtn = stroke.type === 'image' ? `
-    <div class="ft-divider"></div>
-    <button type="button" class="ft-btn ft-remove-bg" title="Удалить фон">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l3-3 3 3M6 3v18M21 6l-3-3-3 3M18 3v18M3 18h18"/></svg>
-      <span style="font-size:11px;margin-left:3px">Remove BG</span>
-    </button>
-  ` : '';
-
   tb.innerHTML = `
     ${colorTrigger}
     <div class="ft-divider"></div>
@@ -229,7 +221,6 @@ function showFloatingToolbar(stroke, idx) {
     <div class="ft-divider"></div>
     <button type="button" class="ft-btn ft-copy"   title="Копировать (Ctrl+C)">${copyIcon}</button>
     <button type="button" class="ft-btn ft-delete" title="Удалить">${delIcon}</button>
-    ${removeBgBtn}
   `;
 
   document.body.appendChild(tb);
@@ -287,30 +278,6 @@ function showFloatingToolbar(stroke, idx) {
     deleteSelected();
   });
 
-  const removeBgEl = tb.querySelector('.ft-remove-bg');
-  if (removeBgEl) {
-    removeBgEl.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      removeBgEl.disabled = true;
-      removeBgEl.querySelector('span').textContent = '…';
-      try {
-        const blob = await window.imglyRemoveBackground(stroke.src, { publicPath: 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/' });
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          if (typeof invalidateImageCache === 'function') invalidateImageCache(stroke.src);
-          updateStroke(idx, { src: ev.target.result });
-          stroke.src = ev.target.result;
-          removeBgEl.querySelector('span').textContent = 'Done';
-        };
-        reader.readAsDataURL(blob);
-      } catch (err) {
-        console.error(err);
-        showToast('Ошибка удаления фона');
-        removeBgEl.disabled = false;
-        removeBgEl.querySelector('span').textContent = 'Remove BG';
-      }
-    });
-  }
 }
 
 function positionToolbar(tb, stroke) {
