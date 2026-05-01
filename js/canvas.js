@@ -538,6 +538,9 @@ function addImageFromDataURL(dataURL, wx, wy) {
     saveToStorage();
     updateEmptyHint();
     updateStatus();
+    setSelection([strokes.length - 1]);
+    document.getElementById('btn-select')?.click();
+    refreshFloatingToolbar();
     scheduleRender();
     showToast && showToast('Изображение добавлено');
   };
