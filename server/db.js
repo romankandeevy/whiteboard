@@ -17,11 +17,14 @@ db.exec(`
     user_id INTEGER NOT NULL,
     title TEXT NOT NULL DEFAULT 'Untitled',
     data TEXT NOT NULL DEFAULT '[]',
-    room_code TEXT UNIQUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
 `);
+
+// Миграции
+try { db.exec(`ALTER TABLE boards ADD COLUMN room_code TEXT UNIQUE`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN username TEXT`); } catch {}
 
 module.exports = db;

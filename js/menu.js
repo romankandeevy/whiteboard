@@ -37,8 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const av    = document.getElementById('wb-menu-avatar');
       const name  = document.getElementById('wb-menu-username');
       const email = document.getElementById('wb-menu-email');
-      if (av)    { av.textContent = user.username ? user.username[0].toUpperCase() : '?'; av.style.background = strToColor(user.username || ''); }
-      if (name)  name.textContent  = user.username || '';
+      const displayName = user.name || user.username || '?';
+      if (av)    { av.textContent = displayName[0].toUpperCase(); av.style.background = strToColor(displayName); }
+      if (name)  name.textContent  = displayName;
       if (email) email.textContent = user.email || '';
     } else {
       userBlock?.classList.add('wb-hidden');
