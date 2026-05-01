@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { randomUUID } = require('crypto');
 const db = require('./db');
 
 const router = express.Router();
@@ -24,7 +25,7 @@ router.post('/register', (req, res) => {
   const user = { id: result.lastInsertRowid, email: email.toLowerCase(), name };
 
   // Создаём первую доску
-  const boardId = crypto.randomUUID();
+  const boardId = randomUUID();
   db.prepare('INSERT INTO boards (id, user_id, title) VALUES (?, ?, ?)').run(boardId, user.id, 'My first board');
 
   res.json({ token: makeToken(user), user: { id: user.id, email: user.email, name: user.name } });
