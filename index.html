@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whiteboard</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a73e8' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <!-- Плейсхолдер для пустой доски -->
+  <div class="empty-hint" id="empty-hint">Начните рисовать…</div>
+
+  <!-- Попап кисти -->
+  <div class="tool-popup" id="tool-popup">
+    <div class="popup-tools-row">
+      <button type="button" class="popup-tool-btn active" id="pop-pen" title="Кисть (P)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        </svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-highlighter" title="Маркер (H)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l-4 4v4h4l4-4"/>
+          <path d="M14 4l6 6-9 9-6-6z"/>
+        </svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-eraser" title="Ластик (E)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 20H7L3 16l10-10 7 7-2.5 2.5"/>
+          <path d="M6 11 2.5 14.5"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="popup-brush-settings">
+      <div class="popup-divider"></div>
+      <div class="brush-presets-row" id="brush-presets-row">
+        <button type="button" class="brush-preset-slot active" data-slot="0" title="Пресет 1"></button>
+        <button type="button" class="brush-preset-slot" data-slot="1" title="Пресет 2"></button>
+        <button type="button" class="brush-preset-slot" data-slot="2" title="Пресет 3"></button>
+      </div>
+      <div class="popup-divider"></div>
+      <div class="preset-label">Размер <span id="size-value">2</span> px</div>
+      <div class="size-presets-row">
+        <button type="button" class="size-dot-btn" data-size="2" title="Тонкая"><span class="size-dot"></span></button>
+        <button type="button" class="size-dot-btn" data-size="6" title="Средняя"><span class="size-dot"></span></button>
+        <button type="button" class="size-dot-btn" data-size="12" title="Толстая"><span class="size-dot"></span></button>
+        <button type="button" class="size-dot-btn" data-size="24" title="Маркер"><span class="size-dot"></span></button>
+      </div>
+      <label for="pop-size" class="sr-only">Размер кисти</label>
+      <input type="range" id="pop-size" min="1" max="40" value="2" aria-label="Размер кисти">
+      <div class="popup-divider"></div>
+      <div class="preset-label">Цвет</div>
+      <div class="color-grid" id="color-grid"></div>
+      <div class="custom-color-row">
+        <input type="color" id="custom-color" title="Произвольный цвет">
+        <input type="text" id="hex-input" maxlength="7" placeholder="#000000" title="HEX">
+      </div>
+    </div>
+  </div>
+
+  <!-- Попап фигур -->
+  <div class="tool-popup" id="shapes-popup">
+    <div class="shapes-grid">
+      <button type="button" class="popup-tool-btn" id="pop-shape-eraser" title="Ластик фигур">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 20H7L3 16l10-10 7 7-2.5 2.5"/>
+          <path d="M6 11 2.5 14.5"/>
+          <line x1="16" y1="16" x2="22" y2="22"/>
+          <line x1="22" y1="16" x2="16" y2="22"/>
+        </svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-square" title="Квадрат (Shift)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-ellipse" title="Эллипс">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="7"/></svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-triangle" title="Треугольник">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 L21 20 L3 20 Z"/></svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-diamond" title="Ромб">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 L22 12 L12 22 L2 12 Z"/></svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-star" title="Звезда">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6Z"/></svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-line" title="Линия">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="21" x2="21" y2="3"/></svg>
+      </button>
+      <button type="button" class="popup-tool-btn" id="pop-arrow" title="Стрелка">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9 5 19 5 19 15"/></svg>
+      </button>
+    </div>
+
+    <div class="popup-divider"></div>
+
+    <div class="preset-label">Толщина контура</div>
+    <div class="size-presets-row">
+      <button type="button" class="shape-size-btn" data-size="1" title="Тонкий"><span class="size-dot"></span></button>
+      <button type="button" class="shape-size-btn active" data-size="2" title="Обычный"><span class="size-dot"></span></button>
+      <button type="button" class="shape-size-btn" data-size="4" title="Толстый"><span class="size-dot"></span></button>
+      <button type="button" class="shape-size-btn" data-size="8" title="Очень толстый"><span class="size-dot"></span></button>
+    </div>
+
+    <div class="popup-divider"></div>
+
+    <div class="shape-fill-row">
+      <span class="preset-label">Заливка</span>
+      <label class="fill-toggle">
+        <input type="checkbox" id="shape-fill-toggle" aria-label="Включить заливку">
+        <span class="fill-toggle-track"></span>
+      </label>
+    </div>
+
+    <div class="preset-label">Цвет</div>
+    <div class="color-grid" id="shape-color-grid"></div>
+  </div>
+
+  <!-- Левый тулбар -->
+  <div class="toolbar">
+    <button type="button" class="tool-btn" id="btn-select" title="Выделение (V)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 3l14 9-7 1-4 7L5 3z"/>
+      </svg>
+    </button>
+    <button type="button" class="tool-btn active" id="btn-pen" title="Кисть (P)">
+      <svg id="btn-pen-icon-pen" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+      </svg>
+      <svg id="btn-pen-icon-eraser" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 20H7L3 16l10-10 7 7-2.5 2.5"/>
+        <path d="M6 11 2.5 14.5"/>
+      </svg>
+      <svg id="btn-pen-icon-hl" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 11l-4 4v4h4l4-4"/>
+        <path d="M14 4l6 6-9 9-6-6z"/>
+      </svg>
+    </button>
+    <button type="button" class="tool-btn" id="btn-image" title="Изображение (I)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+    </button>
+    <input type="file" id="image-file-input" accept="image/*" style="display:none">
+    <button type="button" class="tool-btn" id="btn-shapes" title="Фигуры (S)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="8" height="8" rx="1"/>
+        <circle cx="17" cy="7" r="4"/>
+        <path d="M12 21 L17 13 L22 21 Z"/>
+        <rect x="3" y="13" width="8" height="8" rx="1"/>
+      </svg>
+    </button>
+    <div class="toolbar-divider"></div>
+    <button type="button" class="tool-btn btn-danger" id="btn-clear" title="Очистить">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14H6L5 6"/>
+        <path d="M10 11v6"/>
+        <path d="M14 11v6"/>
+        <path d="M9 6V4h6v2"/>
+      </svg>
+    </button>
+    <div class="toolbar-divider"></div>
+    <button type="button" class="tool-btn" id="btn-undo" title="Отменить (Ctrl+Z)" disabled>
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 14L4 9l5-5"/>
+        <path d="M4 9h10a5 5 0 0 1 0 10h-1"/>
+      </svg>
+    </button>
+    <button type="button" class="tool-btn" id="btn-redo" title="Повторить (Ctrl+Y)" disabled>
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 14l5-5-5-5"/>
+        <path d="M20 9H10a5 5 0 0 0 0 10h1"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Правый тулбар: вид/файл -->
+  <div class="right-toolbar">
+    <button type="button" class="tool-btn" id="btn-grid" title="Сетка (G)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+    </button>
+    <button type="button" class="tool-btn" id="btn-theme" title="Тема">
+      <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <div class="toolbar-divider"></div>
+    <button type="button" class="tool-btn" id="btn-export-png" title="Экспорт PNG">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+    <button type="button" class="tool-btn" id="btn-help" title="Горячие клавиши (?)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </button>
+  </div>
+
+  <!-- Zoom controls -->
+  <div class="zoom-controls">
+    <button type="button" class="zoom-btn" id="btn-zoom-out" title="Уменьшить (Ctrl+-)">−</button>
+    <button type="button" class="zoom-btn zoom-label" id="btn-zoom-reset" title="Сброс масштаба (0)">100%</button>
+    <button type="button" class="zoom-btn" id="btn-zoom-in" title="Увеличить (Ctrl+=)">+</button>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span id="status-objects">Объектов: 0</span>
+    <span class="status-sep">·</span>
+    <span id="status-coords">x: 0, y: 0</span>
+    <span class="status-sep">·</span>
+    <span id="status-saved" class="status-saved">Сохранено</span>
+  </div>
+
+  <!-- Help modal -->
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Горячие клавиши</h2>
+        <button type="button" class="modal-close" id="help-close" aria-label="Закрыть">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="hk-section">
+          <h3>Инструменты</h3>
+          <div class="hk-row"><kbd>V</kbd><span>Выделение</span></div>
+          <div class="hk-row"><kbd>P</kbd><span>Кисть</span></div>
+          <div class="hk-row"><kbd>H</kbd><span>Маркер</span></div>
+          <div class="hk-row"><kbd>E</kbd><span>Ластик</span></div>
+          <div class="hk-row"><kbd>S</kbd><span>Фигуры</span></div>
+          <div class="hk-row"><kbd>I</kbd><span>Изображение</span></div>
+        </div>
+        <div class="hk-section">
+          <h3>Правка</h3>
+          <div class="hk-row"><kbd>Ctrl+Z</kbd><span>Отменить</span></div>
+          <div class="hk-row"><kbd>Ctrl+Y</kbd><span>Повторить</span></div>
+          <div class="hk-row"><kbd>Ctrl+C</kbd><span>Копировать</span></div>
+          <div class="hk-row"><kbd>Ctrl+V</kbd><span>Вставить</span></div>
+          <div class="hk-row"><kbd>Ctrl+D</kbd><span>Дублировать</span></div>
+          <div class="hk-row"><kbd>Ctrl+A</kbd><span>Выделить всё</span></div>
+          <div class="hk-row"><kbd>Shift+клик</kbd><span>Добавить к выделению</span></div>
+          <div class="hk-row"><kbd>Delete</kbd><span>Удалить</span></div>
+          <div class="hk-row"><kbd>[ / ]</kbd><span>Размер кисти</span></div>
+        </div>
+        <div class="hk-section">
+          <h3>Вид</h3>
+          <div class="hk-row"><kbd>Колесо</kbd><span>Зум</span></div>
+          <div class="hk-row"><kbd>Space + drag</kbd><span>Сдвиг</span></div>
+          <div class="hk-row"><kbd>Ctrl+0</kbd><span>Сброс масштаба</span></div>
+          <div class="hk-row"><kbd>G</kbd><span>Сетка</span></div>
+          <div class="hk-row"><kbd>Esc</kbd><span>Снять выделение</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/shapes.js"></script>
+  <script src="js/viewport.js"></script>
+  <script src="js/canvas.js"></script>
+  <script src="js/selection.js"></script>
+  <script src="js/toolbar.js"></script>
+  <script src="js/hotkeys.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/theme.js"></script>
+</body>
+</html>
