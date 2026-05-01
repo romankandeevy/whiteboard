@@ -113,7 +113,7 @@ canvas {
   cursor: pointer;
   color: var(--text);
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: -0.02em;
   font-family: 'Nunito', sans-serif;
   transition: background 0.15s;
@@ -184,7 +184,7 @@ canvas {
 
 .wb-avatar-tooltip {
   position: absolute;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
   background: #222;
@@ -196,6 +196,7 @@ canvas {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
+  z-index: 300;
 }
 .wb-avatar:hover .wb-avatar-tooltip { opacity: 1; }
 
