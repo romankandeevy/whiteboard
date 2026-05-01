@@ -147,10 +147,14 @@ const _imageCache = new Map();
 function getCachedImage(src) {
   if (_imageCache.has(src)) return _imageCache.get(src);
   const img = new Image();
-  img.src = src;
   img.onload = () => { if (typeof scheduleRender === 'function') scheduleRender(); };
+  img.src = src;
   _imageCache.set(src, img);
   return img;
+}
+
+function invalidateImageCache(src) {
+  _imageCache.delete(src);
 }
 
 function drawImageStroke(context, stroke) {
