@@ -132,8 +132,8 @@ canvas {
   background: none;
   cursor: text;
   outline: none;
-  min-width: 60px;
-  max-width: 180px;
+  min-width: 40px;
+  max-width: 400px;
   transition: border-color 0.15s, background 0.15s;
 }
 .wb-header-title:hover { border-color: var(--border); background: var(--surface-hover); }

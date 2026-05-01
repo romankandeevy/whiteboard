@@ -46,10 +46,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-export-png')?.click();
   });
 
-  // Название доски — inline редактирование по клику
+  // Название доски — авторазмер по содержимому
   const titleInput = document.getElementById('wb-board-title');
+  function resizeTitle() {
+    const tmp = document.createElement('span');
+    tmp.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font:' + getComputedStyle(titleInput).font;
+    tmp.textContent = titleInput.value || ' ';
+    document.body.appendChild(tmp);
+    titleInput.style.width = (tmp.offsetWidth + 16) + 'px';
+    tmp.remove();
+  }
+  titleInput?.addEventListener('input', resizeTitle);
   titleInput?.addEventListener('click', () => titleInput.select());
   titleInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === 'Escape') titleInput.blur();
   });
+  resizeTitle();
 });
