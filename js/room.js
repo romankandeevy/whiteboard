@@ -19,12 +19,25 @@ const Room = (() => {
     clearRemoteCursors();
 
     myColor = strToColor(userName + code);
-    socket = io(BACKEND, { transports: ['websocket', 'polling'] });
+    socket = io(BACKEND, {
+      transports: ['polling', 'websocket'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    });
+
+    function joinRoom() {
+      socket.emit('join-room', { code: activeCode, name: userName, color: myColor });
+    }
 
     socket.on('connect', () => {
       activeCode = code.toUpperCase();
-      socket.emit('join-room', { code: activeCode, name: userName, color: myColor });
+      joinRoom();
       updateRoomUI(activeCode);
+    });
+
+    socket.on('reconnect', () => {
+      joinRoom();
     });
 
     socket.on('stroke', (stroke) => {
