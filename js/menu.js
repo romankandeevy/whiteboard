@@ -1,8 +1,10 @@
 // ── WB Header Menu ───────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const moreBtn = document.getElementById('wb-header-more');
-  const menu    = document.getElementById('wb-menu');
+  const logoBtn  = document.getElementById('wb-logo');
+  const moreBtn  = document.getElementById('wb-header-more');
+  const logoMenu = document.getElementById('wb-logo-menu');
+  const moreMenu = document.getElementById('wb-more-menu');
 
   // ── Auth state ──────────────────────────────────────────────────────────────
   let currentUser = null;
@@ -19,71 +21,73 @@ document.addEventListener('DOMContentLoaded', async () => {
   function strToColor(str) {
     let h = 0;
     for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
-    const hue = Math.abs(h) % 360;
-    return `hsl(${hue},60%,50%)`;
+    return `hsl(${Math.abs(h) % 360},60%,50%)`;
   }
 
   function applyAuthState(user) {
-    document.querySelectorAll('.wb-auth-only').forEach(el => el.style.display = user ? '' : 'none');
-    document.querySelectorAll('.wb-guest-only').forEach(el => el.style.display = user ? 'none' : '');
+    document.querySelectorAll('.wb-auth-only').forEach(el => el.classList.toggle('wb-hidden', !user));
+    document.querySelectorAll('.wb-guest-only').forEach(el => el.classList.toggle('wb-hidden', !!user));
 
-    const userBlock = document.getElementById('wb-menu-user');
+    const userBlock   = document.getElementById('wb-menu-user');
     const userDivider = document.getElementById('wb-menu-user-divider');
 
     if (user) {
-      if (userBlock) {
-        userBlock.style.display = 'flex';
-        const av = document.getElementById('wb-menu-avatar');
-        const name = document.getElementById('wb-menu-username');
-        const email = document.getElementById('wb-menu-email');
-        if (av) {
-          av.textContent = user.username ? user.username[0].toUpperCase() : '?';
-          av.style.background = strToColor(user.username || '');
-        }
-        if (name) name.textContent = user.username || '';
-        if (email) email.textContent = user.email || '';
-      }
-      if (userDivider) userDivider.style.display = '';
+      userBlock?.classList.remove('wb-hidden');
+      userDivider?.classList.remove('wb-hidden');
+      const av    = document.getElementById('wb-menu-avatar');
+      const name  = document.getElementById('wb-menu-username');
+      const email = document.getElementById('wb-menu-email');
+      if (av)    { av.textContent = user.username ? user.username[0].toUpperCase() : '?'; av.style.background = strToColor(user.username || ''); }
+      if (name)  name.textContent  = user.username || '';
+      if (email) email.textContent = user.email || '';
     } else {
-      if (userBlock) userBlock.style.display = 'none';
-      if (userDivider) userDivider.style.display = 'none';
+      userBlock?.classList.add('wb-hidden');
+      userDivider?.classList.add('wb-hidden');
     }
   }
 
-  // ── Menu open/close ─────────────────────────────────────────────────────────
-  function closeMenu() {
-    menu.classList.remove('open');
-    moreBtn?.classList.remove('open');
+  // ── Open/close helpers ──────────────────────────────────────────────────────
+  function openMenu(menu, anchor) {
+    closeAll();
+    menu.classList.add('open');
+    anchor.classList.add('open');
+    const rect = anchor.getBoundingClientRect();
+    menu.style.left = rect.left + 'px';
+    menu.style.top  = (rect.bottom + 4) + 'px';
   }
+
+  function closeAll() {
+    [logoMenu, moreMenu].forEach(m => m.classList.remove('open'));
+    [logoBtn, moreBtn].forEach(b => b?.classList.remove('open'));
+  }
+
+  logoBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    logoMenu.classList.contains('open') ? closeAll() : openMenu(logoMenu, logoBtn);
+  });
 
   moreBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    const isOpen = menu.classList.toggle('open');
-    moreBtn.classList.toggle('open', isOpen);
-    if (isOpen) {
-      const rect = moreBtn.getBoundingClientRect();
-      menu.style.left = rect.left + 'px';
-      menu.style.top  = (rect.bottom + 4) + 'px';
-    }
+    moreMenu.classList.contains('open') ? closeAll() : openMenu(moreMenu, moreBtn);
   });
 
   document.addEventListener('click', (e) => {
-    if (!menu.contains(e.target) && e.target !== moreBtn) closeMenu();
+    if (!logoMenu.contains(e.target) && !moreMenu.contains(e.target)) closeAll();
   });
 
-  // ── Menu actions ────────────────────────────────────────────────────────────
+  // ── Logo menu actions ───────────────────────────────────────────────────────
   document.getElementById('menu-login')?.addEventListener('click', () => {
-    closeMenu();
+    closeAll();
     window.location.href = '/auth.html';
   });
 
   document.getElementById('menu-my-boards')?.addEventListener('click', () => {
-    closeMenu();
+    closeAll();
     window.location.href = '/dashboard.html';
   });
 
   document.getElementById('menu-new-board')?.addEventListener('click', async () => {
-    closeMenu();
+    closeAll();
     try {
       const board = await API.createBoard({ title: 'Untitled', data: '{"strokes":[]}' });
       window.location.href = '/?board=' + board.id;
@@ -92,20 +96,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  document.getElementById('menu-logout')?.addEventListener('click', () => {
+    closeAll();
+    API.clearToken();
+    window.location.href = '/auth.html';
+  });
+
+  // ── More menu actions ───────────────────────────────────────────────────────
   document.getElementById('menu-save')?.addEventListener('click', () => {
-    closeMenu();
+    closeAll();
     document.getElementById('btn-export-png')?.click();
   });
 
   document.getElementById('menu-clear')?.addEventListener('click', () => {
-    closeMenu();
+    closeAll();
     document.getElementById('btn-clear')?.click();
-  });
-
-  document.getElementById('menu-logout')?.addEventListener('click', () => {
-    closeMenu();
-    API.clearToken();
-    window.location.href = '/auth.html';
   });
 
   document.getElementById('wb-header-export')?.addEventListener('click', () => {

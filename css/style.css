@@ -205,6 +205,8 @@ canvas {
   outline-offset: 1px;
 }
 
+.wb-hidden { display: none !important; }
+
 .wb-menu {
   position: fixed;
   top: 52px;
