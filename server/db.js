@@ -24,7 +24,9 @@ db.exec(`
 `);
 
 // Миграции
-try { db.exec(`ALTER TABLE boards ADD COLUMN room_code TEXT UNIQUE`); } catch {}
-try { db.exec(`ALTER TABLE users ADD COLUMN username TEXT`); } catch {}
+const boardCols = db.prepare(`PRAGMA table_info(boards)`).all().map(c => c.name);
+if (!boardCols.includes('room_code')) {
+  db.exec(`ALTER TABLE boards ADD COLUMN room_code TEXT`);
+}
 
 module.exports = db;
