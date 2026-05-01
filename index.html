@@ -120,10 +120,17 @@
     <div class="color-grid" id="shape-color-grid"></div>
   </div>
 
-  <!-- Логотип + меню -->
-  <button type="button" id="wb-logo" title="Меню">WB</button>
+  <!-- Хедер -->
+  <header class="wb-header">
+    <button type="button" id="wb-logo" title="Меню">
+      <span class="wb-logo-icon">W</span>
+      WB
+    </button>
+    <label class="sr-only" for="wb-board-title">Название доски</label>
+    <input type="text" class="wb-header-title" id="wb-board-title" value="Untitled" spellcheck="false" aria-label="Название доски">
+    <span class="wb-header-sep"></span>
+  </header>
   <div id="wb-menu" class="wb-menu">
-    <div class="wb-menu-header">Whiteboard</div>
     <button type="button" class="wb-menu-item" id="menu-new">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Новая доска
@@ -166,7 +173,7 @@
         <polyline points="21 15 16 10 5 21"/>
       </svg>
     </button>
-    <input type="file" id="image-file-input" accept="image/*" style="display:none">
+    <input type="file" id="image-file-input" accept="image/*" class="sr-only" aria-label="Загрузить изображение">
     <button type="button" class="tool-btn" id="btn-shapes" title="Фигуры (S)">
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="8" height="8" rx="1"/>

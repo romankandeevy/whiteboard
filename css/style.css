@@ -87,33 +87,74 @@ canvas {
 }
 .empty-hint.hidden { opacity: 0; }
 
-/* ── Логотип / меню ─────────────────────────────────────────────────────── */
+/* ── Хедер ───────────────────────────────────────────────────────────────── */
+
+.wb-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 4px;
+  z-index: 200;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
 
 #wb-logo {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 200;
-  background: var(--accent);
-  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
   border: none;
+  background: none;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  width: 40px;
-  height: 40px;
   cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: background 0.15s, transform 0.1s;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  transition: background 0.15s;
+  flex-shrink: 0;
 }
-#wb-logo:hover { background: #1558c0; }
-#wb-logo.open  { background: #1558c0; transform: scale(0.95); }
+#wb-logo:hover, #wb-logo.open { background: var(--surface-hover); }
+#wb-logo .wb-logo-icon {
+  width: 22px;
+  height: 22px;
+  background: var(--accent);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.wb-header-title {
+  font-size: 13px;
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: none;
+  cursor: text;
+  outline: none;
+  min-width: 80px;
+  max-width: 200px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.wb-header-title:hover { border-color: var(--border); background: var(--surface-hover); }
+.wb-header-title:focus { border-color: var(--accent); background: var(--surface); }
+
+.wb-header-sep { flex: 1; }
 
 .wb-menu {
   position: fixed;
-  top: 64px;
-  left: 16px;
+  top: 52px;
+  left: 12px;
   z-index: 199;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -126,15 +167,6 @@ canvas {
   gap: 2px;
 }
 .wb-menu.open { display: flex; }
-
-.wb-menu-header {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  padding: 4px 10px 6px;
-}
 
 .wb-menu-item {
   display: flex;
@@ -168,7 +200,7 @@ canvas {
 
 .toolbar, .right-toolbar {
   position: fixed;
-  top: 50%;
+  top: calc(50% + 24px);
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
