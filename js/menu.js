@@ -102,6 +102,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = '/auth.html';
   });
 
+  // ── Room ────────────────────────────────────────────────────────────────────
+  const roomToggleBtn = document.getElementById('menu-room-toggle');
+  const roomDialog    = document.getElementById('wb-room-dialog');
+  let roomOpen = false;
+
+  roomToggleBtn?.addEventListener('click', async () => {
+    closeAll();
+    if (roomOpen) {
+      Room.disconnect();
+      roomOpen = false;
+      roomToggleBtn.innerHTML = roomToggleBtn.innerHTML.replace('Закрыть сеть', 'Открыть для сети');
+      return;
+    }
+
+    const boardId = typeof getCurrentBoardId === 'function' ? getCurrentBoardId() : null;
+    if (!boardId || !API.getToken()) {
+      showRoomJoinDialog();
+      return;
+    }
+
+    try {
+      const res = await fetch(`https://whiteboard-production-5ebf.up.railway.app/api/boards/${boardId}/room/open`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${API.getToken()}` }
+      });
+      const data = await res.json();
+      if (data.code) {
+        const user = currentUser?.name || currentUser?.username || 'Гость';
+        Room.connect(data.code, user);
+        roomOpen = true;
+        roomToggleBtn.lastChild.textContent = ' Закрыть сеть';
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  function showRoomJoinDialog() {
+    if (!roomDialog) return;
+    roomDialog.classList.add('open');
+    document.getElementById('wb-room-code-input')?.focus();
+  }
+
+  document.getElementById('wb-room-cancel-btn')?.addEventListener('click', () => {
+    roomDialog?.classList.remove('open');
+  });
+
+  document.getElementById('wb-room-join-btn')?.addEventListener('click', () => {
+    const code = document.getElementById('wb-room-code-input')?.value.trim().toUpperCase();
+    if (!code || code.length !== 6) return;
+    roomDialog?.classList.remove('open');
+    const user = currentUser?.name || currentUser?.username || 'Гость';
+    Room.connect(code, user);
+    roomOpen = true;
+  });
+
+  roomDialog?.addEventListener('click', (e) => {
+    if (e.target === roomDialog) roomDialog.classList.remove('open');
+  });
+
   // ── More menu actions ───────────────────────────────────────────────────────
   document.getElementById('menu-save')?.addEventListener('click', () => {
     closeAll();

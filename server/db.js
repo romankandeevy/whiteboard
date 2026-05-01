@@ -17,6 +17,7 @@ db.exec(`
     user_id INTEGER NOT NULL,
     title TEXT NOT NULL DEFAULT 'Untitled',
     data TEXT NOT NULL DEFAULT '[]',
+    room_code TEXT UNIQUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)

@@ -542,6 +542,7 @@ function stopDraw(e) {
     updateEmptyHint();
     updateStatus();
     scheduleRender();
+    if (typeof Room !== 'undefined') Room.sendStroke(stroke);
   }
   points = [];
 }
@@ -576,6 +577,7 @@ function addImageFromDataURL(dataURL, wx, wy) {
     document.getElementById('btn-select')?.click();
     refreshFloatingToolbar();
     scheduleRender();
+    if (typeof Room !== 'undefined') Room.sendStroke(stroke);
     showToast && showToast('Изображение добавлено');
   };
   img.onerror = () => showToast && showToast('Ошибка загрузки');
@@ -649,6 +651,7 @@ function clearBoard() {
   updateEmptyHint();
   updateStatus();
   scheduleRender();
+  if (typeof Room !== 'undefined') Room.sendClear();
   if (typeof showToast === 'function') showToast('Очищено');
 }
 
@@ -704,6 +707,29 @@ function toggleGrid() {
 function closeAllToolPopups() {
   document.getElementById('tool-popup')?.classList.remove('open');
   document.getElementById('shapes-popup')?.classList.remove('open');
+}
+
+// ── Room callbacks ───────────────────────────────────────────────────────────
+
+function onRemoteStroke(stroke) {
+  strokes.push(stroke);
+  updateEmptyHint();
+  updateStatus();
+  scheduleRender();
+}
+
+function onRemoteStrokesUpdate(incoming) {
+  strokes = incoming;
+  updateEmptyHint();
+  updateStatus();
+  scheduleRender();
+}
+
+function onRemoteClear() {
+  strokes = [];
+  updateEmptyHint();
+  updateStatus();
+  scheduleRender();
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────

@@ -134,9 +134,8 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>
     <span class="wb-header-sep"></span>
-    <div class="wb-users" id="wb-users">
-      <!-- аватарки пользователей рендерятся через JS -->
-    </div>
+    <div class="wb-room-badge" id="wb-room-badge" style="display:none"></div>
+    <div class="wb-users" id="wb-users"></div>
   </header>
   <!-- Меню логотипа WHITE -->
   <div id="wb-logo-menu" class="wb-menu">
@@ -161,6 +160,9 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
       Войти / Регистрация
     </button>
+    <div class="wb-menu-divider"></div>
+    <div class="wb-menu-section-label">Друзья</div>
+    <div class="wb-menu-friends-empty">Друзья ещё не завезли 🚚</div>
     <div class="wb-menu-divider wb-auth-only wb-hidden" id="wb-menu-logout-divider"></div>
     <button type="button" class="wb-menu-item wb-menu-danger wb-auth-only wb-hidden" id="menu-logout">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -170,6 +172,11 @@
 
   <!-- Меню троеточия -->
   <div id="wb-more-menu" class="wb-menu">
+    <button type="button" class="wb-menu-item" id="menu-room-toggle">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Открыть для сети
+    </button>
+    <div class="wb-menu-divider"></div>
     <button type="button" class="wb-menu-item" id="menu-save">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Сохранить PNG
@@ -178,6 +185,18 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
       Очистить доску
     </button>
+  </div>
+
+  <!-- Диалог подключения к комнате -->
+  <div class="wb-room-dialog" id="wb-room-dialog">
+    <div class="wb-room-dialog-box">
+      <div class="wb-room-dialog-title">Подключиться к комнате</div>
+      <input type="text" id="wb-room-code-input" class="wb-room-code-input" placeholder="A1B2C3" maxlength="6" spellcheck="false">
+      <div class="wb-room-dialog-actions">
+        <button type="button" class="wb-room-dialog-btn" id="wb-room-join-btn">Войти</button>
+        <button type="button" class="wb-room-dialog-btn wb-room-dialog-cancel" id="wb-room-cancel-btn">Отмена</button>
+      </div>
+    </div>
   </div>
 
   <!-- Левый тулбар -->
@@ -316,7 +335,9 @@
     </div>
   </div>
 
+  <script src="https://whiteboard-production-5ebf.up.railway.app/socket.io/socket.io.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/room.js"></script>
   <script src="js/menu.js"></script>
   <script src="js/users.js"></script>
   <script src="js/shapes.js"></script>
