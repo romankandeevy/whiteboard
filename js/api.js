@@ -1,7 +1,7 @@
 // ── API client ────────────────────────────────────────────────────────────────
 
 const API = (() => {
-  const BASE = '/api';
+  const BASE = 'https://whiteboard-production-5ebf.up.railway.app/api';
 
   function getToken() { return localStorage.getItem('wb-token'); }
   function saveToken(t) { localStorage.setItem('wb-token', t); }
