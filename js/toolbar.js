@@ -139,6 +139,7 @@ document.addEventListener('click', (e) => {
 function activatePenTool(t) {
   setTool(t);
   deactivateAllToolBtns();
+  if (t !== 'eraser') selectSlot(activeSlot);
   popPen.classList.toggle('active', t === 'pen');
   popHighlighter?.classList.toggle('active', t === 'highlighter');
   popEraser.classList.toggle('active', t === 'eraser');
