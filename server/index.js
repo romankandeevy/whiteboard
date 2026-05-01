@@ -24,43 +24,55 @@ app.get('/{*path}', (req, res) => {
 });
 
 // ── Socket.io rooms ──────────────────────────────────────────────────────────
-// roomCode → Set of socket ids
+// roomCode → Map<socketId, { name, color }>
 const roomUsers = new Map();
+
+function getRoomUsersList(code) {
+  const m = roomUsers.get(code);
+  if (!m) return [];
+  return [...m.entries()].map(([id, u]) => ({ id, name: u.name, color: u.color }));
+}
 
 io.on('connection', (socket) => {
   let currentRoom = null;
-  let currentUser = null;
 
-  socket.on('join-room', ({ code, user }) => {
+  socket.on('join-room', ({ code, name, color }) => {
     currentRoom = code.toUpperCase();
-    currentUser = user || 'Гость';
-
     if (!roomUsers.has(currentRoom)) roomUsers.set(currentRoom, new Map());
-    roomUsers.get(currentRoom).set(socket.id, currentUser);
+    roomUsers.get(currentRoom).set(socket.id, { name: name || 'Гость', color: color || '#888' });
 
     socket.join(currentRoom);
-    io.to(currentRoom).emit('room-users', [...roomUsers.get(currentRoom).values()]);
+    io.to(currentRoom).emit('room-users', getRoomUsersList(currentRoom));
   });
 
   socket.on('stroke', (stroke) => {
     if (currentRoom) socket.to(currentRoom).emit('stroke', stroke);
   });
 
-  socket.on('strokes-update', (strokes) => {
-    if (currentRoom) socket.to(currentRoom).emit('strokes-update', strokes);
+  socket.on('delete-strokes', (ids) => {
+    if (currentRoom) socket.to(currentRoom).emit('delete-strokes', ids);
   });
 
   socket.on('clear', () => {
     if (currentRoom) socket.to(currentRoom).emit('clear');
   });
 
+  socket.on('cursor', ({ x, y }) => {
+    if (currentRoom) socket.to(currentRoom).emit('cursor', { id: socket.id, x, y });
+  });
+
+  socket.on('cursor-leave', () => {
+    if (currentRoom) socket.to(currentRoom).emit('cursor-leave', { id: socket.id });
+  });
+
   socket.on('disconnect', () => {
     if (currentRoom && roomUsers.has(currentRoom)) {
       roomUsers.get(currentRoom).delete(socket.id);
+      socket.to(currentRoom).emit('cursor-leave', { id: socket.id });
       if (roomUsers.get(currentRoom).size === 0) {
         roomUsers.delete(currentRoom);
       } else {
-        io.to(currentRoom).emit('room-users', [...roomUsers.get(currentRoom).values()]);
+        io.to(currentRoom).emit('room-users', getRoomUsersList(currentRoom));
       }
     }
   });

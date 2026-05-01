@@ -103,25 +103,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ── Room ────────────────────────────────────────────────────────────────────
-  const roomToggleBtn = document.getElementById('menu-room-toggle');
-  const roomDialog    = document.getElementById('wb-room-dialog');
+  const roomToggleBtn  = document.getElementById('menu-room-toggle');
+  const roomToggleLbl  = document.getElementById('menu-room-toggle-label');
+  const roomJoinBtn    = document.getElementById('menu-room-join');
+  const roomDialog     = document.getElementById('wb-room-dialog');
   let roomOpen = false;
 
+  // "Открыть для сети" / "Закрыть сеть" — только для владельца доски
   roomToggleBtn?.addEventListener('click', async () => {
     closeAll();
     if (roomOpen) {
       Room.disconnect();
       roomOpen = false;
-      roomToggleBtn.innerHTML = roomToggleBtn.innerHTML.replace('Закрыть сеть', 'Открыть для сети');
+      if (roomToggleLbl) roomToggleLbl.textContent = 'Открыть для сети';
       return;
     }
-
     const boardId = typeof getCurrentBoardId === 'function' ? getCurrentBoardId() : null;
-    if (!boardId || !API.getToken()) {
-      showRoomJoinDialog();
-      return;
-    }
-
+    if (!boardId || !API.getToken()) return;
     try {
       const res = await fetch(`https://whiteboard-production-5ebf.up.railway.app/api/boards/${boardId}/room/open`, {
         method: 'POST',
@@ -129,21 +127,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       const data = await res.json();
       if (data.code) {
-        const user = currentUser?.name || currentUser?.username || 'Гость';
+        const user = currentUser?.name || 'Гость';
         Room.connect(data.code, user);
         roomOpen = true;
-        roomToggleBtn.lastChild.textContent = ' Закрыть сеть';
+        if (roomToggleLbl) roomToggleLbl.textContent = 'Закрыть сеть';
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   });
 
-  function showRoomJoinDialog() {
+  // "Подключиться к комнате" — всегда показывает диалог ввода кода
+  roomJoinBtn?.addEventListener('click', () => {
+    closeAll();
     if (!roomDialog) return;
+    document.getElementById('wb-room-code-input').value = '';
     roomDialog.classList.add('open');
     document.getElementById('wb-room-code-input')?.focus();
-  }
+  });
 
   document.getElementById('wb-room-cancel-btn')?.addEventListener('click', () => {
     roomDialog?.classList.remove('open');
@@ -153,13 +152,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const code = document.getElementById('wb-room-code-input')?.value.trim().toUpperCase();
     if (!code || code.length !== 6) return;
     roomDialog?.classList.remove('open');
-    const user = currentUser?.name || currentUser?.username || 'Гость';
+    const user = currentUser?.name || 'Гость';
     Room.connect(code, user);
-    roomOpen = true;
   });
 
   roomDialog?.addEventListener('click', (e) => {
     if (e.target === roomDialog) roomDialog.classList.remove('open');
+  });
+
+  document.getElementById('wb-room-code-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('wb-room-join-btn')?.click();
+    if (e.key === 'Escape') roomDialog?.classList.remove('open');
   });
 
   // ── More menu actions ───────────────────────────────────────────────────────

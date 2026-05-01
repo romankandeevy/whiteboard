@@ -509,6 +509,7 @@ function stopDraw(e) {
 
   if (SHAPE_TOOLS.has(tool) && shapeStart && wp) {
     const stroke = buildShapeStroke(shapeStart.x, shapeStart.y, wp.x, wp.y);
+    stroke.id = crypto.randomUUID();
     shapeStart = null;
     shapePreviewEnd = null;
     const tooSmall = (stroke.w !== undefined && Math.abs(stroke.w) < 4 && Math.abs(stroke.h) < 4)
@@ -523,12 +524,14 @@ function stopDraw(e) {
     document.getElementById('btn-select')?.click();
     refreshFloatingToolbar();
     scheduleRender();
+    if (typeof Room !== 'undefined') Room.sendStroke(stroke);
     return;
   }
 
   if (STROKE_TOOLS.has(tool) && points.length > 1) {
     const isEraser = tool === 'eraser';
     const stroke = {
+      id: crypto.randomUUID(),
       type: tool,
       pts: smoothPoints(points, 3),
       size: isEraser ? eraserSize : brushSize,
@@ -556,6 +559,7 @@ function addImageFromDataURL(dataURL, wx, wy) {
     let w = img.naturalWidth, h = img.naturalHeight;
     if (w > maxW) { h = h * (maxW / w); w = maxW; }
     const stroke = {
+      id: crypto.randomUUID(),
       type: 'image',
       x: (wx ?? window.innerWidth/2) - w/2,
       y: (wy ?? window.innerHeight/2) - h/2,
@@ -718,6 +722,14 @@ function onRemoteStroke(stroke) {
   scheduleRender();
 }
 
+function onRemoteDeleteStrokes(ids) {
+  const set = new Set(ids);
+  strokes = strokes.filter(s => !s.id || !set.has(s.id));
+  updateEmptyHint();
+  updateStatus();
+  scheduleRender();
+}
+
 function onRemoteStrokesUpdate(incoming) {
   strokes = incoming;
   updateEmptyHint();
@@ -744,12 +756,16 @@ loadFromStorage().then(() => {
 
 // Mouse
 canvas.addEventListener('mousedown', (e) => { canvas.focus(); startDraw(e); });
-canvas.addEventListener('mousemove', onMove);
+canvas.addEventListener('mousemove', (e) => {
+  onMove(e);
+  if (typeof Room !== 'undefined') Room.sendCursor(e.clientX, e.clientY);
+});
 canvas.addEventListener('mouseup',   stopDraw);
 canvas.addEventListener('mouseleave', () => {
   eraserCursor = null;
   penCursor = null;
   scheduleRender();
+  if (typeof Room !== 'undefined') Room.sendCursorLeave();
 });
 
 // Touch

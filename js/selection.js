@@ -607,8 +607,8 @@ function duplicateSelected() {
 
 function deleteSelected() {
   if (selectedIndices.length === 0) return;
-  // Удаляем по убыванию индексов чтобы не сдвигать
   const sorted = [...selectedIndices].sort((a, b) => b - a);
+  const deletedIds = sorted.map(i => strokes[i]?.id).filter(Boolean);
   for (const i of sorted) {
     redoStack.push(strokes.splice(i, 1)[0]);
   }
@@ -617,6 +617,7 @@ function deleteSelected() {
   saveToStorage();
   updateEmptyHint(); updateStatus();
   scheduleRender();
+  if (deletedIds.length && typeof Room !== 'undefined') Room.sendDeleteStrokes(deletedIds);
 }
 
 function selectAll() {
