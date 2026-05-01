@@ -159,7 +159,7 @@ canvas {
 .wb-menu {
   position: fixed;
   top: 52px;
-  left: 12px;
+  left: 0;
   z-index: 199;
   background: var(--surface);
   border: 1px solid var(--border);

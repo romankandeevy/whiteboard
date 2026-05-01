@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation();
     const isOpen = menu.classList.toggle('open');
     moreBtn.classList.toggle('open', isOpen);
+    if (isOpen) {
+      const rect = moreBtn.getBoundingClientRect();
+      menu.style.left = rect.left + 'px';
+      menu.style.top  = (rect.bottom + 4) + 'px';
+    }
   });
 
   document.addEventListener('click', (e) => {
