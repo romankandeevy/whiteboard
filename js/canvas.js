@@ -485,6 +485,9 @@ function stopDraw(e) {
     saveToStorage();
     updateEmptyHint();
     updateStatus();
+    setSelection([strokes.length - 1]);
+    document.getElementById('btn-select')?.click();
+    refreshFloatingToolbar();
     scheduleRender();
     return;
   }
