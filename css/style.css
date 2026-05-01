@@ -122,7 +122,9 @@ canvas {
 #wb-logo:hover, #wb-logo.open { background: var(--surface-hover); }
 
 .wb-header-title {
-  font-size: 13px;
+  font-size: 18px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
   color: var(--text-muted);
   padding: 3px 6px;
   border-radius: 5px;
