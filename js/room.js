@@ -1,10 +1,16 @@
-// ── Room / collaborative sync ─────────────────────────────────────────────────
+// ── Room / collaborative sync (Pusher) ───────────────────────────────────────
 
 const Room = (() => {
-  const BACKEND = 'https://whiteboard-production-5ebf.up.railway.app';
-  let socket = null;
+  const BACKEND  = 'https://whiteboard-production-5ebf.up.railway.app';
+  const PUSHER_KEY     = '23028e580390fb730357';
+  const PUSHER_CLUSTER = 'eu';
+
+  let pusher    = null;
+  let channel   = null;
+  let socketId  = null;
   let activeCode = null;
-  let myColor = null;
+  let myName    = 'Гость';
+  let myColor   = '#888';
 
   function strToColor(str) {
     let h = 0;
@@ -12,101 +18,110 @@ const Room = (() => {
     return `hsl(${Math.abs(h) % 360},70%,50%)`;
   }
 
-  function isConnected() { return !!socket && socket.connected; }
+  function isConnected() { return !!channel; }
 
   function connect(code, userName) {
-    if (socket) socket.disconnect();
-    clearRemoteCursors();
+    disconnect();
+    activeCode = code.toUpperCase();
+    myName     = userName || 'Гость';
+    myColor    = strToColor(myName + activeCode);
 
-    myColor = strToColor(userName + code);
-    socket = io(BACKEND, {
-      transports: ['polling', 'websocket'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
+    pusher = new Pusher(PUSHER_KEY, {
+      cluster: PUSHER_CLUSTER,
+      channelAuthorization: {
+        endpoint: BACKEND + '/api/pusher/auth',
+        transport: 'ajax',
+        params: { username: myName, color: myColor },
+      },
     });
 
-    function joinRoom() {
-      socket.emit('join-room', { code: activeCode, name: userName, color: myColor });
-    }
+    pusher.connection.bind('connected', () => {
+      socketId = pusher.connection.socket_id;
+    });
 
-    socket.on('connect', () => {
-      activeCode = code.toUpperCase();
-      joinRoom();
+    channel = pusher.subscribe('presence-room-' + activeCode);
+
+    channel.bind('pusher:subscription_succeeded', (members) => {
       updateRoomUI(activeCode);
+      const names = [];
+      members.each(m => names.push(m.info.name));
+      if (typeof renderOnlineUsers === 'function') renderOnlineUsers(names);
     });
 
-    socket.on('reconnect', () => {
-      joinRoom();
+    channel.bind('pusher:member_added', () => {
+      const names = [];
+      channel.members.each(m => names.push(m.info.name));
+      if (typeof renderOnlineUsers === 'function') renderOnlineUsers(names);
     });
 
-    socket.on('stroke', (stroke) => {
+    channel.bind('pusher:member_removed', (member) => {
+      removeRemoteCursor(member.id);
+      const names = [];
+      channel.members.each(m => names.push(m.info.name));
+      if (typeof renderOnlineUsers === 'function') renderOnlineUsers(names);
+    });
+
+    channel.bind('stroke', (stroke) => {
       if (typeof onRemoteStroke === 'function') onRemoteStroke(stroke);
     });
 
-    socket.on('delete-strokes', (ids) => {
+    channel.bind('delete-strokes', ({ ids }) => {
       if (typeof onRemoteDeleteStrokes === 'function') onRemoteDeleteStrokes(ids);
     });
 
-    socket.on('clear', () => {
+    channel.bind('clear', () => {
       if (typeof onRemoteClear === 'function') onRemoteClear();
     });
 
-    socket.on('room-users', (users) => {
-      if (typeof renderOnlineUsers === 'function') renderOnlineUsers(users.map(u => u.name));
-    });
-
-    socket.on('cursor', ({ id, x, y }) => {
-      const u = roomUsers.get(id);
+    channel.bind('cursor', ({ id, x, y, name, color }) => {
       const sp = (typeof Viewport !== 'undefined') ? Viewport.worldToScreen(x, y) : { x, y };
-      renderRemoteCursor(id, sp.x, sp.y, u?.name, u?.color);
+      renderRemoteCursor(id, sp.x, sp.y, name, color);
     });
 
-    socket.on('cursor-leave', ({ id }) => {
+    channel.bind('cursor-leave', ({ id }) => {
       removeRemoteCursor(id);
-    });
-
-    socket.on('room-users', (users) => {
-      roomUsers.clear();
-      users.forEach(u => roomUsers.set(u.id, u));
-      if (typeof renderOnlineUsers === 'function') renderOnlineUsers(users.map(u => u.name));
-    });
-
-    socket.on('disconnect', () => {
-      if (activeCode) updateRoomUI(null);
-      clearRemoteCursors();
     });
   }
 
-  // track remote users for cursor labels
-  const roomUsers = new Map();
-
   function disconnect() {
-    socket?.disconnect();
-    socket = null;
+    if (pusher) { pusher.disconnect(); pusher = null; }
+    channel   = null;
+    socketId  = null;
     activeCode = null;
     updateRoomUI(null);
     clearRemoteCursors();
   }
 
-  function sendStroke(stroke) {
-    if (isConnected()) socket.emit('stroke', stroke);
+  async function trigger(event, data) {
+    if (!channel) return;
+    try {
+      await fetch(BACKEND + '/api/room/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: 'presence-room-' + activeCode,
+          event,
+          data,
+          socketId: pusher?.connection?.socket_id,
+        }),
+      });
+    } catch (e) { console.error(e); }
   }
 
-  function sendDeleteStrokes(ids) {
-    if (isConnected()) socket.emit('delete-strokes', ids);
-  }
+  function sendStroke(stroke) { trigger('stroke', stroke); }
+  function sendDeleteStrokes(ids) { trigger('delete-strokes', { ids }); }
+  function sendClear() { trigger('clear', {}); }
 
-  function sendClear() {
-    if (isConnected()) socket.emit('clear');
-  }
-
-  function sendCursor(x, y) {
-    if (isConnected()) socket.emit('cursor', { x, y });
+  let cursorThrottle = 0;
+  function sendCursor(wx, wy) {
+    const now = Date.now();
+    if (now - cursorThrottle < 50) return;
+    cursorThrottle = now;
+    trigger('cursor', { id: pusher?.connection?.socket_id, x: wx, y: wy, name: myName, color: myColor });
   }
 
   function sendCursorLeave() {
-    if (isConnected()) socket.emit('cursor-leave');
+    trigger('cursor-leave', { id: pusher?.connection?.socket_id });
   }
 
   // ── Remote cursors ──────────────────────────────────────────────────────────
