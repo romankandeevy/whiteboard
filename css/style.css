@@ -113,9 +113,9 @@ canvas {
   cursor: pointer;
   color: var(--text);
   font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-family: 'Nunito', sans-serif;
   transition: background 0.15s;
   flex-shrink: 0;
 }
