@@ -106,36 +106,51 @@ canvas {
 #wb-logo {
   display: flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 4px 6px;
   border: none;
   background: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   color: var(--text);
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
   font-family: inherit;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s;
   flex-shrink: 0;
 }
-#wb-logo:hover, #wb-logo.open { background: var(--surface-hover); color: var(--text); }
+#wb-logo:hover, #wb-logo.open { background: var(--surface-hover); }
 
 .wb-header-title {
   font-size: 13px;
-  color: var(--text);
-  padding: 4px 8px;
-  border-radius: 6px;
+  color: var(--text-muted);
+  padding: 3px 6px;
+  border-radius: 5px;
   border: 1px solid transparent;
   background: none;
   cursor: text;
   outline: none;
-  min-width: 80px;
-  max-width: 200px;
+  min-width: 60px;
+  max-width: 180px;
   transition: border-color 0.15s, background 0.15s;
 }
 .wb-header-title:hover { border-color: var(--border); background: var(--surface-hover); }
-.wb-header-title:focus { border-color: var(--accent); background: var(--surface); }
+.wb-header-title:focus { border-color: var(--accent); background: var(--surface); color: var(--text); }
+
+.wb-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.wb-header-icon:hover { background: var(--surface-hover); color: var(--text); }
 
 .wb-header-sep { flex: 1; }
 

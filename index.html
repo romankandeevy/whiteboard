@@ -122,11 +122,15 @@
 
   <!-- Хедер -->
   <header class="wb-header">
-    <button type="button" id="wb-logo" title="Меню">
-      White
-    </button>
+    <button type="button" id="wb-logo" title="Меню">white</button>
     <label class="sr-only" for="wb-board-title">Название доски</label>
     <input type="text" class="wb-header-title" id="wb-board-title" value="Untitled" spellcheck="false" aria-label="Название доски">
+    <button type="button" class="wb-header-icon" id="wb-header-more" title="Ещё">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+    </button>
+    <button type="button" class="wb-header-icon" id="wb-header-export" title="Экспорт">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
     <span class="wb-header-sep"></span>
   </header>
   <div id="wb-menu" class="wb-menu">

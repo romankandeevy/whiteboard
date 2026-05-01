@@ -33,6 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.click();
   });
 
+  document.getElementById('wb-header-export')?.addEventListener('click', () => {
+    document.getElementById('btn-export-png')?.click();
+  });
+
+  document.getElementById('wb-header-more')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = menu.classList.toggle('open');
+    logo.classList.toggle('open', isOpen);
+  });
+
   document.getElementById('menu-clear').addEventListener('click', () => {
     menu.classList.remove('open');
     logo.classList.remove('open');
